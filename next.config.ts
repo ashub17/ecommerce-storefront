@@ -7,6 +7,11 @@ import type { NextConfig } from "next";
 const apiUrl = new URL(process.env.API_URL ?? "http://127.0.0.1:8000");
 
 const nextConfig: NextConfig = {
+  // Partial Prerendering. Each route gets a prerendered static shell, with
+  // request-time data streamed into Suspense holes. Without this, reading the
+  // cart cookie in the header would opt every route into dynamic rendering.
+  cacheComponents: true,
+
   images: {
     remotePatterns: [
       {

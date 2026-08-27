@@ -34,9 +34,33 @@ function GridSkeleton() {
   );
 }
 
+/** Stands in for the whole catalog while searchParams resolve. */
+function CatalogSkeleton() {
+  return (
+    <>
+      <Skeleton className="h-4 w-24" />
+      <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:justify-between">
+        <Skeleton className="h-10 w-full sm:max-w-xs" />
+        <Skeleton className="h-9 w-40" />
+      </div>
+      <div className="mt-10 flex gap-12">
+        <div className="hidden w-56 shrink-0 space-y-4 lg:block">
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-4 w-16" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <GridSkeleton />
+        </div>
+      </div>
+    </>
+  );
+}
+
 /**
- * Results are their own async component so the filters render immediately and
- * only this subtree suspends while the API is queried.
+ * Results are their own async component so the filter chrome renders first and
+ * only the grid suspends while the API is queried.
  */
 async function Results({
   filters,
@@ -65,10 +89,16 @@ async function Results({
   );
 }
 
-export default async function ProductsPage(props: PageProps<"/products">) {
-  // Next 16: searchParams is a Promise and must be awaited.
-  const searchParams = await props.searchParams;
-  const filters = parseFilters(searchParams);
+/**
+ * Everything downstream of searchParams.
+ *
+ * Cache Components requires request-time input to be awaited inside a Suspense
+ * boundary, so the page above can still prerender a static shell.
+ */
+async function Catalog({
+  searchParams,
+}: Pick<PageProps<"/products">, "searchParams">) {
+  const filters = parseFilters(await searchParams);
 
   // Category slugs are resolved to ids up front, so both the facets call and
   // the product query see the same filter set.
@@ -79,13 +109,9 @@ export default async function ProductsPage(props: PageProps<"/products">) {
 
   const query = toApiQuery(filters, categoryIdBySlug);
 
-  // Facets are fetched here rather than inside Results so the sidebar renders
-  // straight away instead of suspending along with the grid.
-  //
   // The category filter IS passed: the API excludes that dimension when
-  // counting each category, but still applies it to `total`. Omitting it here
-  // left the headline reporting the whole catalog while the grid showed a
-  // filtered subset.
+  // counting each category, but still applies it to `total`. Omitting it left
+  // the headline reporting the whole catalog while the grid showed a subset.
   const facets = await getFacets({
     search: query.search,
     category_id: query.category_id,
@@ -95,20 +121,13 @@ export default async function ProductsPage(props: PageProps<"/products">) {
     max_price: query.max_price,
   });
 
-  // Re-keying on the query makes React show the fallback again for each new
-  // filter combination rather than holding the previous results on screen.
-  const suspenseKey = JSON.stringify(filters);
-
   return (
-    <Container className="py-12">
-      <header className="mb-10 space-y-3">
-        <h1 className="font-display text-3xl sm:text-4xl">All products</h1>
-        <p className="text-fg-muted text-sm">
-          {facets.total} {facets.total === 1 ? "product" : "products"}
-        </p>
-      </header>
+    <>
+      <p className="text-fg-muted text-sm">
+        {facets.total} {facets.total === 1 ? "product" : "products"}
+      </p>
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <SearchInput className="sm:max-w-xs sm:flex-1" />
 
         <div className="flex items-center gap-3">
@@ -125,11 +144,27 @@ export default async function ProductsPage(props: PageProps<"/products">) {
         <FilterSidebar facets={facets} />
 
         <div className="min-w-0 flex-1">
-          <Suspense key={suspenseKey} fallback={<GridSkeleton />}>
+          {/* Re-keyed per filter combination so the skeleton returns for each
+              new query rather than holding the previous results on screen. */}
+          <Suspense key={JSON.stringify(filters)} fallback={<GridSkeleton />}>
             <Results filters={filters} query={query} />
           </Suspense>
         </div>
       </div>
+    </>
+  );
+}
+
+export default function ProductsPage(props: PageProps<"/products">) {
+  return (
+    <Container className="py-12">
+      <header className="mb-10">
+        <h1 className="font-display text-3xl sm:text-4xl">All products</h1>
+      </header>
+
+      <Suspense fallback={<CatalogSkeleton />}>
+        <Catalog searchParams={props.searchParams} />
+      </Suspense>
     </Container>
   );
 }

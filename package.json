@@ -12,7 +12,9 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "verify:contract": "tsx scripts/verify-contract.ts",
-    "verify:catalog": "tsx scripts/verify-catalog.ts"
+    "verify:catalog": "tsx scripts/verify-catalog.ts",
+    "verify:product": "tsx scripts/verify-product.ts",
+    "verify": "npm run verify:contract && npm run verify:catalog && npm run verify:product"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

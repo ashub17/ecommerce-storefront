@@ -1,8 +1,24 @@
 import Link from "next/link";
+import { cacheLife } from "next/cache";
 import { Container } from "@/components/ui/container";
 import { getContentBlock } from "@/lib/catalog";
 
+/**
+ * The year is read through a cached function rather than inline.
+ *
+ * Under Cache Components an inline `new Date()` cannot be prerendered — the
+ * value would be frozen at build time and silently wrong every January. Caching
+ * it with a daily life keeps the shell static while the year still refreshes.
+ */
+async function currentYear(): Promise<number> {
+  "use cache";
+  cacheLife("days");
+
+  return new Date().getFullYear();
+}
+
 export async function SiteFooter() {
+  const year = await currentYear();
   const about = await getContentBlock("about-us").catch(() => null);
 
   return (
@@ -74,7 +90,7 @@ export async function SiteFooter() {
 
       <Container className="border-border border-t py-6">
         <p className="text-fg-subtle text-xs">
-          © {new Date().getFullYear()} Aurora. A demonstration storefront.
+          © {year} Aurora. A demonstration storefront.
         </p>
       </Container>
     </footer>

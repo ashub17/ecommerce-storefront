@@ -1,11 +1,18 @@
 import Link from "next/link";
+import { Suspense } from "react";
+import {
+  CartBadge,
+  CartBadgeFallback,
+  CartLink,
+} from "@/components/layout/cart-badge";
 import { Container } from "@/components/ui/container";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { getCategories } from "@/lib/catalog";
 
 /**
- * The header is a Server Component so the category nav is rendered from live
- * data with no client fetch and no layout shift.
+ * The header is a Server Component so the category nav renders from live data
+ * with no client fetch and no layout shift. Categories are cached, so this
+ * belongs to the static shell; only the cart count is request-time.
  */
 export async function SiteHeader() {
   const categories = await getCategories(true).catch(() => []);
@@ -55,12 +62,11 @@ export async function SiteHeader() {
             Account
           </Link>
 
-          <Link
-            href="/cart"
-            className="border-border hover:border-border-strong inline-flex h-9 items-center rounded-full border px-4 text-sm transition-colors"
-          >
-            Cart
-          </Link>
+          <CartLink>
+            <Suspense fallback={<CartBadgeFallback />}>
+              <CartBadge />
+            </Suspense>
+          </CartLink>
         </div>
       </Container>
     </header>

@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cacheLife, cacheTag } from "next/cache";
 import { apiItem, apiList } from "@/lib/api";
 import type {
   Banner,
@@ -14,11 +15,11 @@ import type {
 /**
  * Server-side reads for the public catalog.
  *
- * Public data is cached and revalidated on a timer rather than fetched per
- * request: a storefront's catalog changes far less often than it is viewed.
+ * With Cache Components enabled, data is dynamic unless a function opts in
+ * with `use cache`. Each read below is cached and tagged, so it can be
+ * invalidated by tag when the admin panel changes something rather than
+ * waiting for a timer.
  */
-
-const CATALOG_REVALIDATE = 300; // seconds
 
 export type ProductQuery = {
   search?: string;
@@ -37,44 +38,50 @@ export async function getProducts(query: ProductQuery = {}): Promise<{
   items: Product[];
   meta: PaginationMeta | null;
 }> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("products");
+
   return apiList<Product>("products", {
     query: {
       ...query,
       featured: query.featured ? 1 : undefined,
       in_stock: query.in_stock ? 1 : undefined,
     },
-    next: { revalidate: CATALOG_REVALIDATE, tags: ["products"] },
   });
 }
 
 export async function getProduct(slug: string): Promise<Product> {
-  return apiItem<Product>(`products/${encodeURIComponent(slug)}`, {
-    next: {
-      revalidate: CATALOG_REVALIDATE,
-      tags: ["products", `product:${slug}`],
-    },
-  });
+  "use cache";
+  cacheLife("hours");
+  cacheTag("products", `product:${slug}`);
+
+  return apiItem<Product>(`products/${encodeURIComponent(slug)}`);
 }
 
 export async function getRelatedProducts(
   slug: string,
   limit = 8,
 ): Promise<Product[]> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("products");
+
   const { items } = await apiList<Product>(
     `products/${encodeURIComponent(slug)}/related`,
-    {
-      query: { limit },
-      next: { revalidate: CATALOG_REVALIDATE, tags: ["products"] },
-    },
+    { query: { limit } },
   );
 
   return items;
 }
 
 export async function getCategories(tree = false): Promise<Category[]> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("categories");
+
   const { items } = await apiList<Category>("categories", {
     query: { tree: tree ? 1 : undefined },
-    next: { revalidate: CATALOG_REVALIDATE, tags: ["categories"] },
   });
 
   return items;
@@ -83,28 +90,36 @@ export async function getCategories(tree = false): Promise<Category[]> {
 export async function getFacets(
   query: Omit<ProductQuery, "sort" | "page" | "per_page"> = {},
 ): Promise<CatalogFacets> {
+  "use cache";
+  // Shorter than the catalog itself: facet counts move whenever stock does.
+  cacheLife("minutes");
+  cacheTag("products", "categories");
+
   return apiItem<CatalogFacets>("catalog/facets", {
     query: {
       ...query,
       featured: query.featured ? 1 : undefined,
       in_stock: query.in_stock ? 1 : undefined,
     },
-    next: { revalidate: 60, tags: ["products", "categories"] },
   });
 }
 
 export async function getBanners(): Promise<Banner[]> {
-  const { items } = await apiList<Banner>("banners", {
-    next: { revalidate: CATALOG_REVALIDATE, tags: ["banners"] },
-  });
+  "use cache";
+  cacheLife("hours");
+  cacheTag("banners");
+
+  const { items } = await apiList<Banner>("banners");
 
   return items;
 }
 
 export async function getContentBlocks(): Promise<ContentBlock[]> {
-  const { items } = await apiList<ContentBlock>("content-blocks", {
-    next: { revalidate: CATALOG_REVALIDATE, tags: ["content"] },
-  });
+  "use cache";
+  cacheLife("hours");
+  cacheTag("content");
+
+  const { items } = await apiList<ContentBlock>("content-blocks");
 
   return items;
 }
