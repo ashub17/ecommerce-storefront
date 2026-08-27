@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { addToCart, type AddToCartResult } from "@/app/actions/cart";
+import { addToCart, type CartActionResult } from "@/app/actions/cart";
 import { Button } from "@/components/ui/button";
 import type { Product } from "@/types/api";
 
 export function AddToCart({ product }: { product: Product }) {
   const [quantity, setQuantity] = useState(1);
-  const [result, setResult] = useState<AddToCartResult | null>(null);
+  const [result, setResult] = useState<CartActionResult | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const max = Math.max(1, product.stock_quantity);

@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import {
+  AccountLink,
+  AccountLinkFallback,
+} from "@/components/layout/account-link";
+import {
   CartBadge,
   CartBadgeFallback,
   CartLink,
@@ -55,12 +59,9 @@ export async function SiteHeader() {
         <div className="flex items-center gap-3">
           <ThemeToggle />
 
-          <Link
-            href="/account"
-            className="text-fg-muted hover:text-fg hidden text-sm transition-colors sm:block"
-          >
-            Account
-          </Link>
+          <Suspense fallback={<AccountLinkFallback />}>
+            <AccountLink />
+          </Suspense>
 
           <CartLink>
             <Suspense fallback={<CartBadgeFallback />}>

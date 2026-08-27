@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { countLines, readGuestCart } from "@/lib/guest-cart";
+import { getCartCount } from "@/lib/cart";
 
 /**
  * The cart link, split out because it reads a cookie.
@@ -9,7 +9,8 @@ import { countLines, readGuestCart } from "@/lib/guest-cart";
  * means the rest of the site still prerenders, and only the count streams in.
  */
 export async function CartBadge() {
-  const count = countLines(await readGuestCart().catch(() => []));
+  // Resolves to the server cart when signed in, the cookie otherwise.
+  const count = await getCartCount();
 
   return (
     <>
