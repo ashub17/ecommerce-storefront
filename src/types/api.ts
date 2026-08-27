@@ -243,6 +243,24 @@ export type Order = {
   updated_at: string;
 };
 
+/** GET /api/cart/totals — PricingService output for the current cart. */
+export type CartTotals = {
+  subtotal: number;
+  tax: number;
+  shipping_fee: number;
+  total: number;
+  currency: string;
+  total_items: number;
+  unavailable: Array<{
+    product_id: number;
+    product_name?: string;
+    reason: "unavailable" | "insufficient_stock";
+    available?: number;
+    requested?: number;
+  }>;
+  can_checkout: boolean;
+};
+
 export type CheckoutInput = {
   shipping_address: AddressInput;
   same_as_shipping: boolean;

@@ -164,11 +164,29 @@ async function main() {
   );
 
   // --- unknown slug ---
-  const missing = await load("/products/definitely-not-real");
+  //
+  // Partial Prerendering commits the response status before the product
+  // lookup resolves, so this is a soft 404: the right page, the wrong code,
+  // and the code cannot be changed mid-stream. proxy.ts sets X-Robots-Tag
+  // instead, which is what actually keeps it out of a search index.
+  const missingRes = await fetch(SITE + "/products/definitely-not-real");
+  const missingHtml = (await missingRes.text()).replace(/<!-- -->/g, "");
+
   check(
-    "unknown slug returns 404",
-    missing.status === 404,
-    String(missing.status),
+    "unknown slug renders the not-found page",
+    missingHtml.includes("couldn") || missingHtml.includes("not found"),
+  );
+  check(
+    "unknown slug is marked noindex via X-Robots-Tag",
+    (missingRes.headers.get("x-robots-tag") ?? "").includes("noindex"),
+    String(missingRes.headers.get("x-robots-tag")),
+  );
+
+  const realRes = await fetch(SITE + "/products/" + plain.slug);
+  check(
+    "a real product is not marked noindex",
+    !(realRes.headers.get("x-robots-tag") ?? "").includes("noindex"),
+    String(realRes.headers.get("x-robots-tag")),
   );
 
   console.log(`\n${"-".repeat(52)}\nPASSED: ${passed}   FAILED: ${failed}`);

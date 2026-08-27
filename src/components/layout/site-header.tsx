@@ -4,11 +4,7 @@ import {
   AccountLink,
   AccountLinkFallback,
 } from "@/components/layout/account-link";
-import {
-  CartBadge,
-  CartBadgeFallback,
-  CartLink,
-} from "@/components/layout/cart-badge";
+import { CartBadge, CartBadgeFallback } from "@/components/layout/cart-badge";
 import { Container } from "@/components/ui/container";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { getCategories } from "@/lib/catalog";
@@ -63,11 +59,9 @@ export async function SiteHeader() {
             <AccountLink />
           </Suspense>
 
-          <CartLink>
-            <Suspense fallback={<CartBadgeFallback />}>
-              <CartBadge />
-            </Suspense>
-          </CartLink>
+          <Suspense fallback={<CartBadgeFallback />}>
+            <CartBadge />
+          </Suspense>
         </div>
       </Container>
     </header>

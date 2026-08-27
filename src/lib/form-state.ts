@@ -17,3 +17,14 @@ export const EMPTY_FORM_STATE: AuthFormState = {
   message: "",
   errors: {},
 };
+
+export type CheckoutFormState = AuthFormState & {
+  /** Set when the problem can only be fixed back on the cart page. */
+  returnToCart?: boolean;
+};
+
+export const EMPTY_CHECKOUT_STATE: CheckoutFormState = {
+  ok: false,
+  message: "",
+  errors: {},
+};

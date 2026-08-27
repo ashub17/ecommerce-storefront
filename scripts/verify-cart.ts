@@ -67,10 +67,7 @@ async function main() {
   const empty = await loadCart(null);
   check("empty cart renders", empty.status === 200);
   check("empty state shown", empty.text.includes("Your cart is empty"));
-  check(
-    "no checkout button when empty",
-    !empty.text.includes(">Checkout<"),
-  );
+  check("no checkout button when empty", !empty.text.includes(">Checkout<"));
 
   // --- one line ---
   const one = await loadCart([{ product_id: a.id, quantity: 2 }]);
@@ -82,10 +79,7 @@ async function main() {
   );
   check("item count shown", one.text.includes("Subtotal (2 items)"));
   check("checkout available", one.text.includes("Checkout"));
-  check(
-    "guest prompted to sign in",
-    one.text.includes("to save your cart"),
-  );
+  check("guest prompted to sign in", one.text.includes("to save your cart"));
 
   // --- two lines, subtotal is the sum ---
   const two = await loadCart([
@@ -156,7 +150,12 @@ async function main() {
     },
   });
   const homeText = (await withCookie.text()).replace(/<!-- -->/g, "");
-  check("header badge shows the count", homeText.includes("3 items in cart"));
+  // The drawer trigger announces the count on its aria-label, which is what a
+  // screen reader reads out.
+  check(
+    "header badge announces the count",
+    homeText.includes('aria-label="Cart, 3 items"'),
+  );
 
   console.log(`\n${"-".repeat(52)}\nPASSED: ${passed}   FAILED: ${failed}`);
   process.exit(failed > 0 ? 1 : 0);

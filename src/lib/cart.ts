@@ -4,7 +4,7 @@ import { apiItem } from "@/lib/api";
 import { getProducts } from "@/lib/catalog";
 import { countLines, readGuestCart } from "@/lib/guest-cart";
 import { getSessionToken } from "@/lib/session";
-import type { Cart, Product } from "@/types/api";
+import type { Cart, CartTotals, Product } from "@/types/api";
 
 /**
  * One cart shape for the whole storefront.
@@ -139,5 +139,27 @@ export async function getCartCount(): Promise<number> {
     return cart.total_items ?? 0;
   } catch {
     return 0;
+  }
+}
+
+/**
+ * Tax, shipping and total for the signed-in cart, calculated by the API.
+ *
+ * Deliberately not derived on the client: `PricingService` is the only
+ * authority on pricing, and a storefront that recomputes it will eventually
+ * quote a total the server disagrees with.
+ */
+export async function getCartTotals(): Promise<CartTotals | null> {
+  const token = await getSessionToken();
+
+  if (!token) return null;
+
+  try {
+    return await apiItem<CartTotals>("cart/totals", {
+      token,
+      cache: "no-store",
+    });
+  } catch {
+    return null;
   }
 }

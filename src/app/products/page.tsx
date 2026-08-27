@@ -17,6 +17,10 @@ export const metadata: Metadata = {
   title: "All products",
   description:
     "Browse the full catalog — filter by category, price and availability.",
+  // Filters produce a combinatorial number of URLs that all show the same
+  // catalog. Pointing them at one canonical stops that being read as
+  // duplicate content, while the pages stay crawlable and shareable.
+  alternates: { canonical: "/products" },
 };
 
 function GridSkeleton() {

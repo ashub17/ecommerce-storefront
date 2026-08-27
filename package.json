@@ -14,9 +14,11 @@
     "verify:contract": "tsx scripts/verify-contract.ts",
     "verify:catalog": "tsx scripts/verify-catalog.ts",
     "verify:product": "tsx scripts/verify-product.ts",
-    "verify": "npm run verify:contract && npm run verify:catalog && npm run verify:product && npm run verify:cart && npm run verify:auth",
+    "verify": "npm run verify:contract && npm run verify:catalog && npm run verify:product && npm run verify:cart && npm run verify:auth && npm run verify:checkout && npm run verify:account",
     "verify:cart": "tsx scripts/verify-cart.ts",
-    "verify:auth": "tsx scripts/verify-auth.ts"
+    "verify:auth": "tsx scripts/verify-auth.ts",
+    "verify:checkout": "tsx scripts/verify-checkout.ts",
+    "verify:account": "tsx scripts/verify-account.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
