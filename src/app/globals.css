@@ -1,0 +1,164 @@
+@import "tailwindcss";
+
+/*
+ * Theme has three states: an explicit choice stamps data-theme on <html> and
+ * always wins; with nothing stamped, the OS preference decides. Tokens are
+ * redefined per state rather than per component, so nothing in the app needs a
+ * `dark:` prefix — colours follow the token.
+ */
+
+:root {
+  --bg: #ffffff;
+  --bg-subtle: #fafaf9;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+
+  --fg: #1c1917;
+  --fg-muted: #78716c;
+  --fg-subtle: #a8a29e;
+
+  --border: #e7e5e4;
+  --border-strong: #d6d3d1;
+
+  --primary: #1c1917;
+  --primary-fg: #fafaf9;
+
+  --accent: #9a3412;
+  --accent-subtle: #fff7ed;
+
+  --danger: #b91c1c;
+  --success: #15803d;
+
+  --ring: #1c1917;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0c0a09;
+    --bg-subtle: #1c1917;
+    --surface: #131110;
+    --surface-raised: #1c1917;
+
+    --fg: #f5f5f4;
+    --fg-muted: #a8a29e;
+    --fg-subtle: #78716c;
+
+    --border: #292524;
+    --border-strong: #44403c;
+
+    --primary: #f5f5f4;
+    --primary-fg: #1c1917;
+
+    --accent: #fb923c;
+    --accent-subtle: #1f1410;
+
+    --danger: #f87171;
+    --success: #4ade80;
+
+    --ring: #f5f5f4;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #0c0a09;
+  --bg-subtle: #1c1917;
+  --surface: #131110;
+  --surface-raised: #1c1917;
+
+  --fg: #f5f5f4;
+  --fg-muted: #a8a29e;
+  --fg-subtle: #78716c;
+
+  --border: #292524;
+  --border-strong: #44403c;
+
+  --primary: #f5f5f4;
+  --primary-fg: #1c1917;
+
+  --accent: #fb923c;
+  --accent-subtle: #1f1410;
+
+  --danger: #f87171;
+  --success: #4ade80;
+
+  --ring: #f5f5f4;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-subtle: var(--bg-subtle);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+
+  --color-primary: var(--primary);
+  --color-primary-fg: var(--primary-fg);
+
+  --color-accent: var(--accent);
+  --color-accent-subtle: var(--accent-subtle);
+
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+  --color-ring: var(--ring);
+
+  --font-sans: var(--font-geist-sans);
+  --font-serif: var(--font-display);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* Rare cases that need to branch on theme rather than swap a token. */
+@custom-variant dark {
+  &:where([data-theme="dark"], [data-theme="dark"] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(
+      :root:not([data-theme="light"]),
+      :root:not([data-theme="light"]) *
+    ) {
+      @slot;
+    }
+  }
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Typographic scale: display face for headings, generous tracking control. */
+.font-display {
+  font-family: var(--font-display), ui-serif, Georgia, serif;
+  font-weight: 400;
+  letter-spacing: -0.015em;
+}
+
+::selection {
+  background-color: var(--fg);
+  color: var(--bg);
+}
+
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Respect a user's reduced-motion preference across every transition. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
